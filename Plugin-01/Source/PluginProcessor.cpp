@@ -172,12 +172,12 @@ void Plugin01AudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffe
 //==============================================================================
 bool Plugin01AudioProcessor::hasEditor() const
 {
-    return false; // (change this to false if you choose to not supply an editor)
+    return true; // (change this to false if you choose to not supply an editor)
 }
 
 AudioProcessorEditor* Plugin01AudioProcessor::createEditor()
 {
-    return nullptr; //new Plugin01AudioProcessorEditor (*this);
+    return new Plugin01AudioProcessorEditor (*this);
 }
 
 //==============================================================================
