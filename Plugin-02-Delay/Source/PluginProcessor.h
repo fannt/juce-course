@@ -71,4 +71,7 @@ private:
     AudioParameterFloat *mDelayTimeParam;
     double sampleRate;
     
+    float mFeedbackLeft;
+    float mFeedbackRight;
+    
 };

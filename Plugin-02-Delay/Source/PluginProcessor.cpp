@@ -35,6 +35,9 @@ Plugin02delayAudioProcessor::Plugin02delayAudioProcessor()
     
     mDelayTimeParam = new AudioParameterFloat("delayTime","Delay Time",0.0f,2.0f,0.2f);
     addParameter(mDelayTimeParam);
+    
+    float mFeedbackLeft = 0;
+    float mFeedbackRight = 0;
 }
 
 Plugin02delayAudioProcessor::~Plugin02delayAudioProcessor()
@@ -191,16 +194,24 @@ void Plugin02delayAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
     float* rightChannel = buffer.getWritePointer(1);
     
     for (int i = 0; i < buffer.getNumSamples(); i++) {
-        mCircularBufferLeft[mCircularBufferWriteHead] = leftChannel[i];
-        mCircularBufferRight[mCircularBufferWriteHead] = rightChannel[i];
+        
+        mCircularBufferLeft[mCircularBufferWriteHead] = leftChannel[i] + mFeedbackLeft;
+        mCircularBufferRight[mCircularBufferWriteHead] = rightChannel[i] + mFeedbackRight;
         
         mDelayReadHead = mCircularBufferWriteHead - mDelayTimeInSamples;
         
         if (mDelayReadHead < 0) {
             mDelayReadHead += mCircularBufferlength;
         }
-        buffer.addSample(0, i, mCircularBufferLeft[(int)mDelayReadHead]);
-        buffer.addSample(1, i, mCircularBufferRight[(int)mDelayReadHead]);
+        
+        float delay_sample_left = mCircularBufferLeft[(int)mDelayReadHead];
+        float delay_sample_right = mCircularBufferRight[(int)mDelayReadHead];
+        
+        mFeedbackLeft = delay_sample_left * 0.4;
+        mFeedbackRight = delay_sample_right * 0.4;
+        
+        buffer.addSample(0, i, delay_sample_left);
+        buffer.addSample(1, i, delay_sample_right);
         
         mCircularBufferWriteHead++;
         
