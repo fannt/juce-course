@@ -16,7 +16,8 @@
 //==============================================================================
 /**
 */
-class Plugin02delayAudioProcessorEditor  : public AudioProcessorEditor
+class Plugin02delayAudioProcessorEditor  : public AudioProcessorEditor,
+                                           public Slider::Listener
 {
 public:
     Plugin02delayAudioProcessorEditor (Plugin02delayAudioProcessor&);
@@ -25,6 +26,8 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
+    
+    void sliderValueChanged (Slider* slider) override;
 
 private:
     // This reference is provided as a quick way for your editor to
@@ -32,4 +35,6 @@ private:
     Plugin02delayAudioProcessor& processor;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Plugin02delayAudioProcessorEditor)
+    
+    Slider mDelayTimeSlider;
 };

@@ -28,6 +28,13 @@ Plugin02delayAudioProcessor::Plugin02delayAudioProcessor()
     mCircularBufferRight = nullptr;
     mCircularBufferWriteHead = 0;
     mCircularBufferlength = 0;
+    
+    mDelayReadHead = 0;
+    mDelayTimeInSamples = 0;
+    sampleRate = 0;
+    
+    mDelayTimeParam = new AudioParameterFloat("delayTime","Delay Time",0.0f,2.0f,0.2f);
+    addParameter(mDelayTimeParam);
 }
 
 Plugin02delayAudioProcessor::~Plugin02delayAudioProcessor()
@@ -132,6 +139,10 @@ void Plugin02delayAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     }
     
     mCircularBufferWriteHead = 0;
+
+//    mDelayReadHead = 0;
+    mDelayTimeInSamples = mDelayTimeParam->get() * sampleRate;
+    this->sampleRate = sampleRate;
 }
 
 void Plugin02delayAudioProcessor::releaseResources()
@@ -170,28 +181,12 @@ void Plugin02delayAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-//    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-//    {
-//        auto* channelData = buffer.getWritePointer (channel);
-//
-//        // ..do something to the data...
-//    }
-
+    
+    
+    mDelayTimeInSamples = mDelayTimeParam->get() * sampleRate;
+    
     float* leftChannel = buffer.getWritePointer(0);
     float* rightChannel = buffer.getWritePointer(1);
     
@@ -199,7 +194,16 @@ void Plugin02delayAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
         mCircularBufferLeft[mCircularBufferWriteHead] = leftChannel[i];
         mCircularBufferRight[mCircularBufferWriteHead] = rightChannel[i];
         
+        mDelayReadHead = mCircularBufferWriteHead - mDelayTimeInSamples;
+        
+        if (mDelayReadHead < 0) {
+            mDelayReadHead += mCircularBufferlength;
+        }
+        buffer.addSample(0, i, mCircularBufferLeft[(int)mDelayReadHead]);
+        buffer.addSample(1, i, mCircularBufferRight[(int)mDelayReadHead]);
+        
         mCircularBufferWriteHead++;
+        
         if (mCircularBufferWriteHead >= mCircularBufferlength) {
             mCircularBufferWriteHead = 0;
         }
@@ -237,3 +241,8 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new Plugin02delayAudioProcessor();
 }
+
+
+//void delayTimeDidChang () {
+//    *this.prepa
+//}

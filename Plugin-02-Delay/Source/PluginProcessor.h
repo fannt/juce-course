@@ -66,4 +66,9 @@ private:
     int mCircularBufferWriteHead;
     int mCircularBufferlength;
     
+    int mDelayReadHead;
+    int mDelayTimeInSamples;
+    AudioParameterFloat *mDelayTimeParam;
+    double sampleRate;
+    
 };
