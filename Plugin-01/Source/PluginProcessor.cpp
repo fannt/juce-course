@@ -163,7 +163,8 @@ void Plugin01AudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffe
         
         for (int sample = 0; sample < buffer.getNumSamples(); sample++)
         {
-            channelData[sample] *= mGainParam->get();
+            SmoothedValue<float> smoothGain = SmoothedValue<float>(mGainParam->get());
+            channelData[sample] *= smoothGain.getNextValue();
         }
     }
 }
