@@ -74,4 +74,6 @@ private:
     float mFeedbackLeft;
     float mFeedbackRight;
     
+    float mDryWet;
+    
 };

@@ -36,8 +36,10 @@ Plugin02delayAudioProcessor::Plugin02delayAudioProcessor()
     mDelayTimeParam = new AudioParameterFloat("delayTime","Delay Time",0.0f,2.0f,0.2f);
     addParameter(mDelayTimeParam);
     
-    float mFeedbackLeft = 0;
-    float mFeedbackRight = 0;
+    mFeedbackLeft = 0;
+    mFeedbackRight = 0;
+    
+    mDryWet = 0.5;
 }
 
 Plugin02delayAudioProcessor::~Plugin02delayAudioProcessor()
@@ -141,10 +143,8 @@ void Plugin02delayAudioProcessor::prepareToPlay (double sampleRate, int samplesP
         mCircularBufferRight = new float[mCircularBufferlength];
     }
     
-    mCircularBufferWriteHead = 0;
-
-//    mDelayReadHead = 0;
     mDelayTimeInSamples = mDelayTimeParam->get() * sampleRate;
+    mCircularBufferWriteHead = mDelayTimeInSamples / 2;
     this->sampleRate = sampleRate;
 }
 
@@ -210,8 +210,8 @@ void Plugin02delayAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
         mFeedbackLeft = delay_sample_left * 0.4;
         mFeedbackRight = delay_sample_right * 0.4;
         
-        buffer.addSample(0, i, delay_sample_left);
-        buffer.addSample(1, i, delay_sample_right);
+        buffer.setSample(0, i, buffer.getSample(0, i) * (1 - mDryWet) + delay_sample_left * mDryWet);
+        buffer.setSample(1, i, buffer.getSample(1, i) * (1 - mDryWet) + delay_sample_right * mDryWet);
         
         mCircularBufferWriteHead++;
         
