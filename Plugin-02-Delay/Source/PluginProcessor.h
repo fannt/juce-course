@@ -68,12 +68,12 @@ private:
     
     int mDelayReadHead;
     int mDelayTimeInSamples;
-    AudioParameterFloat *mDelayTimeParam;
-    double sampleRate;
     
     float mFeedbackLeft;
     float mFeedbackRight;
     
-    float mDryWet;
+    AudioParameterFloat *mDryWet;
+    AudioParameterFloat *mFeedback;
+    AudioParameterFloat *mDelayTime;
     
 };
