@@ -137,10 +137,12 @@ void Plugin02delayAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     
     if (mCircularBufferLeft == nullptr) {
         mCircularBufferLeft = new float[mCircularBufferlength];
+        std::fill_n(mCircularBufferLeft, mCircularBufferlength, 0);
     }
     
     if (mCircularBufferRight == nullptr) {
         mCircularBufferRight = new float[mCircularBufferlength];
+        std::fill_n(mCircularBufferRight, mCircularBufferlength, 0);
     }
     
     mDelayTimeInSamples = mDelayTimeParam->get() * sampleRate;
