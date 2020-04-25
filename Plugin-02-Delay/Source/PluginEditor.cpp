@@ -19,17 +19,59 @@ Plugin02delayAudioProcessorEditor::Plugin02delayAudioProcessorEditor (Plugin02de
     // editor's size to whatever you need it to be.
     setSize (400, 300);
     
-    mDelayTimeSlider.setBounds(8, 8, 100, 100);
-    mDelayTimeSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
-    mDelayTimeSlider.setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
     
     auto& params = processor.getParameters();
-    AudioParameterFloat* delay = (AudioParameterFloat*)params.getUnchecked(0);
+    
+    // dry/wet slider
+    
+    mDryWetSlider.setBounds(6, 112, 100, 100);
+    mDryWetSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
+    mDryWetSlider.setTextBoxStyle(Slider::TextBoxAbove, true, 80, 10);
+
+    AudioParameterFloat* dryWet = (AudioParameterFloat*)params.getUnchecked(0);
+    mDryWetSlider.setRange(dryWet->range.start, dryWet->range.end);
+    mDryWetSlider.setValue(*dryWet);
+
+    mDryWetSlider.addListener(this);
+    addAndMakeVisible(mDryWetSlider);
+    
+    mDryWetSlider.onValueChange = [this, dryWet] { *dryWet = mDryWetSlider.getValue(); };
+    mDryWetSlider.onDragStart = [dryWet] {dryWet->beginChangeGesture();};
+    mDryWetSlider.onDragEnd = [dryWet] {dryWet->endChangeGesture();};
+    
+    // delay time slider
+    
+    mDelayTimeSlider.setBounds(112, 6, 100, 100);
+    mDelayTimeSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
+    mDelayTimeSlider.setTextBoxStyle(Slider::TextBoxAbove, true, 80, 10);
+    
+    AudioParameterFloat* delay = (AudioParameterFloat*)params.getUnchecked(2);
     mDelayTimeSlider.setRange(delay->range.start, delay->range.end);
     mDelayTimeSlider.setValue(*delay);
     
     mDelayTimeSlider.addListener(this);
     addAndMakeVisible(mDelayTimeSlider);
+    
+    mDelayTimeSlider.onValueChange = [this, delay] { *delay = mDelayTimeSlider.getValue(); };
+    mDelayTimeSlider.onDragStart = [delay] {delay->beginChangeGesture();};
+    mDelayTimeSlider.onDragEnd = [delay] {delay->endChangeGesture();};
+    
+    // feedback slider
+    
+    mFeedbackSlider.setBounds(6, 6, 100, 100);
+    mFeedbackSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
+    mFeedbackSlider.setTextBoxStyle(Slider::TextBoxAbove, true, 80, 10);
+
+    AudioParameterFloat* feedback = (AudioParameterFloat*)params.getUnchecked(1);
+    mFeedbackSlider.setRange(feedback->range.start, feedback->range.end);
+    mFeedbackSlider.setValue(*feedback);
+
+    mFeedbackSlider.addListener(this);
+    addAndMakeVisible(mFeedbackSlider);
+    
+    mFeedbackSlider.onValueChange = [this, feedback] { *feedback = mFeedbackSlider.getValue(); };
+    mFeedbackSlider.onDragStart = [feedback] {feedback->beginChangeGesture();};
+    mFeedbackSlider.onDragEnd = [feedback] {feedback->endChangeGesture();};
 }
 
 Plugin02delayAudioProcessorEditor::~Plugin02delayAudioProcessorEditor()
@@ -56,11 +98,5 @@ void Plugin02delayAudioProcessorEditor::resized()
 
 void Plugin02delayAudioProcessorEditor::sliderValueChanged(Slider *slider)
 {
-    auto& params = processor.getParameters();
-    
-    if (slider == &mDelayTimeSlider) {
-        DBG("delay slider change");
-        AudioParameterFloat* delay = (AudioParameterFloat*)params.getUnchecked(0);
-        *delay = mDelayTimeSlider.getValue();
-    }
+   
 }
