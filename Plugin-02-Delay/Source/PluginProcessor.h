@@ -72,6 +72,8 @@ private:
     float mFeedbackLeft;
     float mFeedbackRight;
     
+    float mDelayTimeSmooth;
+    
     AudioParameterFloat *mDryWet;
     AudioParameterFloat *mFeedback;
     AudioParameterFloat *mDelayTime;

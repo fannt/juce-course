@@ -43,6 +43,7 @@ Plugin02delayAudioProcessor::Plugin02delayAudioProcessor()
     
     mFeedbackLeft = 0;
     mFeedbackRight = 0;
+    mDelayTimeSmooth = 0;
 }
 
 Plugin02delayAudioProcessor::~Plugin02delayAudioProcessor()
@@ -150,6 +151,7 @@ void Plugin02delayAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     
     mDelayTimeInSamples = *mDelayTime  * sampleRate;
     mCircularBufferWriteHead = 0; //mDelayTimeInSamples / 2;
+    mDelayTimeSmooth = *mDelayTime;
 }
 
 void Plugin02delayAudioProcessor::releaseResources()
@@ -191,13 +193,13 @@ void Plugin02delayAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-    
-    mDelayTimeInSamples = *mDelayTime * getSampleRate();
-    
     float* leftChannel = buffer.getWritePointer(0);
     float* rightChannel = buffer.getWritePointer(1);
     
     for (int i = 0; i < buffer.getNumSamples(); i++) {
+        
+        mDelayTimeSmooth = mDelayTimeSmooth - 0.001 * (mDelayTimeSmooth - *mDelayTime);
+        mDelayTimeInSamples = mDelayTimeSmooth * getSampleRate();
         
         mCircularBufferLeft[mCircularBufferWriteHead] = leftChannel[i] + mFeedbackLeft;
         mCircularBufferRight[mCircularBufferWriteHead] = rightChannel[i] + mFeedbackRight;
