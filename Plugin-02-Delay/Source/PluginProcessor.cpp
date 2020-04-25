@@ -208,8 +208,19 @@ void Plugin02delayAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
             mDelayReadHead += mCircularBufferlength;
         }
         
-        float delay_sample_left = mCircularBufferLeft[(int)mDelayReadHead];
-        float delay_sample_right = mCircularBufferRight[(int)mDelayReadHead];
+        int readHead_x = (int)mDelayReadHead;
+        int readHead_x1 = readHead_x + 1;
+        if (readHead_x1 >= mCircularBufferlength) {
+            readHead_x1 -= mCircularBufferlength;
+        }
+        
+        float readHeadFloat = mDelayReadHead - readHead_x;
+        
+        float delay_sample_left = lin_interp(mCircularBufferLeft[readHead_x], mCircularBufferLeft[readHead_x1], readHeadFloat);
+        float delay_sample_right = lin_interp(mCircularBufferRight[readHead_x], mCircularBufferRight[readHead_x1], readHeadFloat);
+
+//        float delay_sample_left = mCircularBufferLeft[(int)mDelayReadHead];
+//        float delay_sample_right = mCircularBufferRight[(int)mDelayReadHead];
         
         mFeedbackLeft = delay_sample_left * *mFeedback;
         mFeedbackRight = delay_sample_right * *mFeedback;
@@ -257,7 +268,6 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new Plugin02delayAudioProcessor();
 }
 
-
-//void delayTimeDidChang () {
-//    *this.prepa
-//}
+float Plugin02delayAudioProcessor::lin_interp(float sample_x, float sample_x1, float inPhase) {
+    return (1 - inPhase) * sample_x + inPhase * sample_x1;
+}

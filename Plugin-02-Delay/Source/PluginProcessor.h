@@ -66,8 +66,8 @@ private:
     int mCircularBufferWriteHead;
     int mCircularBufferlength;
     
-    int mDelayReadHead;
-    int mDelayTimeInSamples;
+    float mDelayReadHead;
+    float mDelayTimeInSamples;
     
     float mFeedbackLeft;
     float mFeedbackRight;
@@ -76,4 +76,5 @@ private:
     AudioParameterFloat *mFeedback;
     AudioParameterFloat *mDelayTime;
     
+    float lin_interp(float sample_x, float sample_x1, float inPhase);
 };
