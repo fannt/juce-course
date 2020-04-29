@@ -74,9 +74,13 @@ private:
     
     float mDelayTimeSmooth;
     
-    AudioParameterFloat *mDryWet;
+    AudioParameterFloat *mDepth;
+    AudioParameterFloat *mRate;
+    AudioParameterFloat *mPhaseOffset;
     AudioParameterFloat *mFeedback;
-    AudioParameterFloat *mDelayTime;
+    AudioParameterFloat *mDryWet;
+    
+    AudioParameterInt *mType;
     
     float lin_interp(float sample_x, float sample_x1, float inPhase);
 };

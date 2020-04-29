@@ -32,14 +32,27 @@ ChorusflangerAudioProcessor::ChorusflangerAudioProcessor()
     mDelayReadHead = 0;
     mDelayTimeInSamples = 0;
     
-    mDelayTime = new AudioParameterFloat("delayTime","Delay Time",0.01f,MAX_DELAY_TIME,0.2f);
-    addParameter(mDelayTime);
+    
+    
+//    AudioParameterInt *mTypeParameter;
+    
+    mDepth = new AudioParameterFloat("depth","Depth",0.0f,1.0,0.5f);
+    addParameter(mDepth);
+    
+    mRate = new AudioParameterFloat("rate","Rate",0.1f,20.0f,10.f);
+    addParameter(mRate);
+    
+    mPhaseOffset = new AudioParameterFloat("phaseOffset","Phase Offset",0.f,1.0f,0.f);
+    addParameter(mPhaseOffset);
     
     mDryWet = new AudioParameterFloat("dryWet","Dry / Wet",0.01f,1.0f,0.5f);
     addParameter(mDryWet);
     
-    mFeedback = new AudioParameterFloat("feedback","Feedback",0.0f,1.1f,0.4f);
+    mFeedback = new AudioParameterFloat("feedback","Feedback",0.0f,1.05f,0.4f);
     addParameter(mFeedback);
+    
+    mType = new AudioParameterInt("type","Type",0,1,0);
+    addParameter(mType);
     
     mFeedbackLeft = 0;
     mFeedbackRight = 0;
@@ -149,9 +162,9 @@ void ChorusflangerAudioProcessor::prepareToPlay (double sampleRate, int samplesP
          std::fill_n(mCircularBufferRight, mCircularBufferlength, 0);
      }
      
-     mDelayTimeInSamples = *mDelayTime  * sampleRate;
+//     mDelayTimeInSamples = *mDelayTime  * sampleRate;
      mCircularBufferWriteHead = 0; //mDelayTimeInSamples / 2;
-     mDelayTimeSmooth = *mDelayTime;
+//     mDelayTimeSmooth = *mDelayTime;
 }
 
 void ChorusflangerAudioProcessor::releaseResources()
@@ -184,7 +197,7 @@ bool ChorusflangerAudioProcessor::isBusesLayoutSupported (const BusesLayout& lay
 }
 #endif
 
-void ChorusflangerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
+void ChorusflangerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
     ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -197,8 +210,8 @@ void ChorusflangerAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
     float* rightChannel = buffer.getWritePointer(1);
     
     for (int i = 0; i < buffer.getNumSamples(); i++) {
-        
-        mDelayTimeSmooth = mDelayTimeSmooth - 0.001 * (mDelayTimeSmooth - *mDelayTime);
+        float mDelayTime = 1;
+        mDelayTimeSmooth = mDelayTimeSmooth - 0.001 * (mDelayTimeSmooth - mDelayTime);
         mDelayTimeInSamples = mDelayTimeSmooth * getSampleRate();
         
         mCircularBufferLeft[mCircularBufferWriteHead] = leftChannel[i] + mFeedbackLeft;
@@ -268,4 +281,8 @@ void ChorusflangerAudioProcessor::setStateInformation (const void* data, int siz
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new ChorusflangerAudioProcessor();
+}
+
+float ChorusflangerAudioProcessor::lin_interp(float sample_x, float sample_x1, float inPhase) {
+    return (1 - inPhase) * sample_x + inPhase * sample_x1;
 }
