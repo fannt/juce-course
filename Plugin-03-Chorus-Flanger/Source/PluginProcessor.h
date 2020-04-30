@@ -82,5 +82,7 @@ private:
     
     AudioParameterInt *mType;
     
+    float mLFOPhase;
+    
     float lin_interp(float sample_x, float sample_x1, float inPhase);
 };

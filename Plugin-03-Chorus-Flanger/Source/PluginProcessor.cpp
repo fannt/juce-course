@@ -32,6 +32,7 @@ ChorusflangerAudioProcessor::ChorusflangerAudioProcessor()
     mDelayReadHead = 0;
     mDelayTimeInSamples = 0;
     
+    mLFOPhase = 0;
     
     
 //    AudioParameterInt *mTypeParameter;
@@ -48,7 +49,7 @@ ChorusflangerAudioProcessor::ChorusflangerAudioProcessor()
     mDryWet = new AudioParameterFloat("dryWet","Dry / Wet",0.01f,1.0f,0.5f);
     addParameter(mDryWet);
     
-    mFeedback = new AudioParameterFloat("feedback","Feedback",0.0f,1.05f,0.4f);
+    mFeedback = new AudioParameterFloat("feedback","Feedback",0.0f,0.99f,0.4f);
     addParameter(mFeedback);
     
     mType = new AudioParameterInt("type","Type",0,1,0);
@@ -165,6 +166,8 @@ void ChorusflangerAudioProcessor::prepareToPlay (double sampleRate, int samplesP
 //     mDelayTimeInSamples = *mDelayTime  * sampleRate;
      mCircularBufferWriteHead = 0; //mDelayTimeInSamples / 2;
 //     mDelayTimeSmooth = *mDelayTime;
+    mDelayTimeSmooth = 1;//*mDelayTime;
+    mLFOPhase = 0;
 }
 
 void ChorusflangerAudioProcessor::releaseResources()
@@ -210,9 +213,23 @@ void ChorusflangerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     float* rightChannel = buffer.getWritePointer(1);
     
     for (int i = 0; i < buffer.getNumSamples(); i++) {
-        float mDelayTime = 1;
-        mDelayTimeSmooth = mDelayTimeSmooth - 0.001 * (mDelayTimeSmooth - mDelayTime);
-        mDelayTimeInSamples = mDelayTimeSmooth * getSampleRate();
+        
+        float lfoOut = sin(2 * M_PI * mLFOPhase);
+        
+        mLFOPhase += *mRate / getSampleRate();
+        
+        if ( mLFOPhase > 1) {
+            mLFOPhase =-1;
+        }
+        
+        lfoOut *= *mDepth;
+        
+//        float lfoOutMapped = jmap(lfoOut, -1, 1, 0.005f, 0.03f);
+        float lfoOutMapped = jmap(lfoOut, 0.005f, 0.03f);
+        
+        mDelayTimeSmooth = mDelayTimeSmooth - 0.001 * (mDelayTimeSmooth - lfoOutMapped);
+        int delayTimeInSamplesLeft = mDelayTimeSmooth * getSampleRate();
+        int delayTimeInSamplesRight = mDelayTimeSmooth * getSampleRate();
         
         mCircularBufferLeft[mCircularBufferWriteHead] = leftChannel[i] + mFeedbackLeft;
         mCircularBufferRight[mCircularBufferWriteHead] = rightChannel[i] + mFeedbackRight;
