@@ -66,13 +66,13 @@ private:
     int mCircularBufferWriteHead;
     int mCircularBufferlength;
     
-    float mDelayReadHead;
-    float mDelayTimeInSamples;
+//    float mDelayTimeInSamples;
     
     float mFeedbackLeft;
     float mFeedbackRight;
     
-    float mDelayTimeSmooth;
+    float mDelayTimeSmoothLeft;
+    float mDelayTimeSmoothRight;
     
     AudioParameterFloat *mDepth;
     AudioParameterFloat *mRate;
